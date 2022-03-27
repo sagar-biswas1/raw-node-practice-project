@@ -7,13 +7,18 @@
 *
 */
 
-//dependencies 
+//dependencies
 const url = require("url");
 const { StringDecoder } = require("string_decoder");
+const routes = require("../routes");
+const {
+  notFoundHandler,
+} = require("../handlers/routeHandlers/notFoundHandler");
 
-// module scaffolding 
 
-const handler = {}
+// module scaffolding
+
+const handler = {};
 
 handler.handleReqRes = (req, res) => {
   // request handle
@@ -25,9 +30,35 @@ handler.handleReqRes = (req, res) => {
   const queryStringObject = parseUrl.query;
   const headerObject = req.headers;
 
+  const requestProperties = {
+    parseUrl,
+    path,
+    trimmedPath,
+    method,
+    queryStringObject,
+    headerObject,
+  };
+
   // decoding buffered data got from payload
   const decoder = new StringDecoder("utf-8");
   let realData = "";
+
+  const chosenHandler = routes[trimmedPath]
+    ? routes[trimmedPath]
+    : notFoundHandler;
+
+  chosenHandler(requestProperties, (statusCode, payload) => {
+    statusCode = typeof statusCode == "number" ? statusCode : 500;
+
+    payload = typeof payload === "object" ? payload : {};
+
+    const payloadString = JSON.stringify(payload);
+
+    res.writeHead(statusCode);
+
+    res.end(payloadString);
+  });
+
   req.on("data", (buffer) => {
     realData += decoder.write(buffer);
   });
@@ -39,5 +70,4 @@ handler.handleReqRes = (req, res) => {
   });
 };
 
-
-module.exports = handler 
+module.exports = handler;
