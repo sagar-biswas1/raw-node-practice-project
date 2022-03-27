@@ -1,0 +1,21 @@
+{
+  "name": "uptime_monitoring_app",
+  "version": "1.0.0",
+  "description": "A rest api to monitor up or down time of user defined link ",
+  "main": "index.js",
+  "devDependencies": {},
+  "scripts": {
+    "start": "nodemon index",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sagar-biswas1/raw-node-practice-project.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sagar-biswas1/raw-node-practice-project/issues"
+  },
+  "homepage": "https://github.com/sagar-biswas1/raw-node-practice-project#readme"
+}
