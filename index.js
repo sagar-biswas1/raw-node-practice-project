@@ -11,7 +11,17 @@
 const http = require("http");
 const { handleReqRes } = require("./helpers/handleReqRes");
 const environment = require("./helpers/environments");
+const data = require("./lib/data")
 
+
+//testing scaffolding
+data.create('test','newFile', {name:"sagar", class:9},(err)=>{
+
+  console.log('error was', err)
+
+})
+
+//end
 
 
 //app object -> module scaffolding
