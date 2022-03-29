@@ -11,28 +11,28 @@
 const http = require("http");
 const { handleReqRes } = require("./helpers/handleReqRes");
 const environment = require("./helpers/environments");
-const data = require("./lib/data")
+const data = require("./lib/crudFsData")
 
 
 // testing scaffolding
-data.create('test','newFile', {name:"sagar", class:9},(err)=>{
+// data.create('test','newFile2', {name:"sagarsssssssssssssssssssssssss", class:9},(err)=>{
 
-  console.log('error was', err)
+//   console.log('error was', err)
 
-})
+// })
 
-data.read('test','newFile',(err,data)=>{
-  console.log(err,data)
-})
+// data.read('test','3',(err,data)=>{
+//   console.log(err,data)
+// })
 
 
-data.update("test", "newFile", { name: "oshan.............", class:29 }, (err) => {
-  console.log("error was", err);
-});
+// data.update("test", "newFile", { name: "oshan.............", class:29 }, (err) => {
+//   console.log("error was", err);
+// });
 
-data.delete("test", "newFile", (err, data) => {
-  console.log(err, data);
-});
+// data.delete("test", "newFile", (err, data) => {
+// //   console.log(err, data);
+// });
 //end
 
 
