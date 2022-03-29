@@ -16,7 +16,6 @@ const {
 } = require("../handlers/routeHandlers/notFoundHandler");
 
 // module scaffolding
-
 const handler = {};
 
 handler.handleReqRes = (req, res) => {

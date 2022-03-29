@@ -14,13 +14,25 @@ const environment = require("./helpers/environments");
 const data = require("./lib/data")
 
 
-//testing scaffolding
+// testing scaffolding
 data.create('test','newFile', {name:"sagar", class:9},(err)=>{
 
   console.log('error was', err)
 
 })
 
+data.read('test','newFile',(err,data)=>{
+  console.log(err,data)
+})
+
+
+data.update("test", "newFile", { name: "oshan.............", class:29 }, (err) => {
+  console.log("error was", err);
+});
+
+data.delete("test", "newFile", (err, data) => {
+  console.log(err, data);
+});
 //end
 
 
