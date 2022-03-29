@@ -14,26 +14,7 @@ const environment = require("./helpers/environments");
 const data = require("./lib/crudFsData")
 
 
-// testing scaffolding
-// data.create('test','newFile2', {name:"sagarsssssssssssssssssssssssss", class:9},(err)=>{
 
-//   console.log('error was', err)
-
-// })
-
-// data.read('test','3',(err,data)=>{
-//   console.log(err,data)
-// })
-
-
-// data.update("test", "newFile", { name: "oshan.............", class:29 }, (err) => {
-//   console.log("error was", err);
-// });
-
-// data.delete("test", "newFile", (err, data) => {
-// //   console.log(err, data);
-// });
-//end
 
 
 //app object -> module scaffolding
