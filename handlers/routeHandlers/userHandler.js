@@ -200,6 +200,10 @@ handler._users.put = (requestProperties, callBack) => {
     });
   }
 };
+
+
+
+
 handler._users.delete = (requestProperties, callBack) => {
   const phone =
     typeof requestProperties.body.phone === "string" &&
@@ -232,6 +236,7 @@ handler._users.delete = (requestProperties, callBack) => {
       error: "invalid request. try again",
     });
   }
+
 };
 
 module.exports = handler;

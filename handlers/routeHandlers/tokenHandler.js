@@ -111,13 +111,89 @@ handler._token.get = (requestProperties, callBack) => {
 };
 
 handler._token.put = (requestProperties, callBack) => {
+  const id =
+    typeof requestProperties.body.tokenID === "string" &&
+    requestProperties.body.tokenID.trim().length === 20
+      ? requestProperties.body.tokenID
+      : false;
+
+  const extend =
+    typeof requestProperties.body.extend === "boolean" &&
+    requestProperties.body.extend === true
+      ? requestProperties.body.extend
+      : false;
+
+  if (id && extend) {
+    data.read("tokens", id, (err, tokenData) => {
+      let tokenObject = parseJSON(tokenData);
+      if (parseJSON(tokenData).expires > Date.now()) {
+        tokenObject.expires = Date.now() + 60 * 60 * 1000;
+
+        // store the updated tokenData
+
+        data.update("tokens", id,tokenObject, (err) => {
+          if (!err) {
+            callBack(200, {
+              message: "Sussessfully updated data...",
+            });
+          } else {
+            callBack(400, {
+              error: "server side error",
+            });
+          }
+        });
+      } else {
+        callBack(400, {
+          error: "token already expired.....",
+        });
+      }
+    });
+  } else {
+    callBack(400, {
+      error: "there was a problem in your req...",
+    });
+  }
+};
+handler._token.delete = (requestProperties, callBack) => {
+// check the token is valid
+ const id =
+   typeof requestProperties.body.tokenID === "string" &&
+   requestProperties.body.tokenID.trim().length === 20
+     ? requestProperties.body.tokenID
+     : false;
+
+ if (id) {
+   data.read("tokens", id, (err, tokenData) => {
+     if (!err && tokenData) {
+       data.delete("tokens", id, (err) => {
+         if (!err) {
+           callBack(200, {
+             message: "successfully deleted user",
+           });
+         } else {
+           callBack(500, {
+             error: "server site error...",
+           });
+         }
+       });
+     } else {
+       callBack(500, {
+         error: "server site error...",
+       });
+     }
+   });
+ } else {
+   callBack(400, {
+     error: "invalid request. try again",
+   });
+ }
+
+// 
 
 
-    
-
+ 
 
 
 };
-handler._token.delete = (requestProperties, callBack) => {};
 
 module.exports = handler;
