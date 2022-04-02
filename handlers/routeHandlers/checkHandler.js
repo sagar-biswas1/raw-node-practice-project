@@ -164,7 +164,52 @@ handler._check.post = (requestProperties, callBack) => {
   }
 };
 
-handler._check.get = (requestProperties, callBack) => {};
+handler._check.get = (requestProperties, callBack) => {
+  const id =
+    typeof requestProperties.queryStringObject.id === "string" &&
+    requestProperties.queryStringObject.id.trim().length === 20
+      ? requestProperties.queryStringObject.id
+      : false;
+
+  if (id) {
+    //lookup the check
+    // console.log(id);
+    data.read("checks", id, (err, checkData) => {
+      let parsedCheckData = { ...parseJSON(checkData) };
+
+      if (!err && checkData) {
+        let token =
+          typeof requestProperties.headerObject.token === "string"
+            ? requestProperties.headerObject.token
+            : false;
+
+        tokenHandler._token.verify(
+          token,
+          parsedCheckData.userPhone,
+          (tokenId) => {
+            if (tokenId) {
+              callBack(200, {
+                parsedCheckData,
+              });
+            } else {
+              callBack(400, {
+                message: "Auth error",
+              });
+            }
+          }
+        );
+      } else {
+        callBack(400, {
+          message: "You have a problem in your request......",
+        });
+      }
+    });
+  } else {
+    callBack(400, {
+      message: "You have a problem in your request...",
+    });
+  }
+};
 
 handler._check.put = (requestProperties, callBack) => {};
 
