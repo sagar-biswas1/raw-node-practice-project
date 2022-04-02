@@ -11,6 +11,7 @@
 
 const data = require("../../lib/crudFsData");
 const { hash, parseJSON } = require("../../helpers/utilities");
+const tokenHandler = require("./tokenHandler");
 
 // module scaffolding
 
@@ -106,18 +107,32 @@ handler._users.get = (requestProperties, callBack) => {
       : false;
 
   if (phone) {
-    //lookup the user
+    // authentication using token
+    let token =
+      typeof requestProperties.headerObject.token === "string"
+        ? requestProperties.headerObject.token
+        : false;
 
-    data.read("users", phone, (err, user) => {
-      if (!err && user) {
-        const foundedUser = { ...parseJSON(user) };
-        delete foundedUser.password;
+    tokenHandler._token.verify(token, phone, (tokenId) => {
+      if (tokenId) {
+        //lookup the user
 
-        callBack(200, foundedUser);
+        data.read("users", phone, (err, user) => {
+          if (!err && user) {
+            const foundedUser = { ...parseJSON(user) };
+            delete foundedUser.password;
+
+            callBack(200, foundedUser);
+          } else {
+            callBack(404, {
+              error: "no user found with this query",
+              status: 404,
+            });
+          }
+        });
       } else {
-        callBack(404, {
-          error: "no user found with this query",
-          status: 404,
+        callBack(403, {
+          error: "Authentication failure...",
         });
       }
     });
@@ -153,33 +168,46 @@ handler._users.put = (requestProperties, callBack) => {
       : false;
 
   if (phone) {
-    if (firstName || lastName || password) {
-      //lookup user
-      data.read("users", phone, (err, uData) => {
-        console.log({ uData });
-        const userData = { ...parseJSON(uData) };
+    // authentication of users"
+    let token =
+      typeof requestProperties.headerObject.token === "string"
+        ? requestProperties.headerObject.token
+        : false;
 
-        if (!err && userData) {
-          if (firstName) {
-            userData.firstName = firstName;
-          }
-          if (lastName) {
-            userData.lastName = lastName;
-          }
-          if (password) {
-            userData.password = hash(password);
-          }
+    tokenHandler._token.verify(token, phone, (tokenId) => {
+      if (tokenId) {
+        if (firstName || lastName || password) {
+          //lookup user
+          data.read("users", phone, (err, uData) => {
+            const userData = { ...parseJSON(uData) };
 
-          //store to db
+            if (!err && userData) {
+              if (firstName) {
+                userData.firstName = firstName;
+              }
+              if (lastName) {
+                userData.lastName = lastName;
+              }
+              if (password) {
+                userData.password = hash(password);
+              }
 
-          data.update("users", phone, userData, (err) => {
-            if (!err) {
-              callBack(200, {
-                message: "user has been updated successfully...",
+              //store to db
+
+              data.update("users", phone, userData, (err) => {
+                if (!err) {
+                  callBack(200, {
+                    message: "user has been updated successfully...",
+                  });
+                } else {
+                  callBack(500, {
+                    error: "there was an error in serverside",
+                  });
+                }
               });
             } else {
-              callBack(500, {
-                error: "there was an error in serverside",
+              callBack(400, {
+                error: "you have problem in you request...",
               });
             }
           });
@@ -188,21 +216,18 @@ handler._users.put = (requestProperties, callBack) => {
             error: "you have problem in you request...",
           });
         }
-      });
-    } else {
-      callBack(400, {
-        error: "you have problem in you request...",
-      });
-    }
+      } else {
+        callBack(403, {
+          error: "Authentication failure...",
+        });
+      }
+    });
   } else {
     callBack(400, {
       error: "invalid phone number. try again",
     });
   }
 };
-
-
-
 
 handler._users.delete = (requestProperties, callBack) => {
   const phone =
@@ -212,12 +237,25 @@ handler._users.delete = (requestProperties, callBack) => {
       : false;
 
   if (phone) {
-    data.read("users", phone, (err, user) => {
-      if (!err && user) {
-        data.delete("users", phone, (err) => {
-          if (!err) {
-            callBack(200, {
-              message: "successfully deleted user",
+    let token =
+      typeof requestProperties.headerObject.token === "string"
+        ? requestProperties.headerObject.token
+        : false;
+
+    tokenHandler._token.verify(token, phone, (tokenId) => {
+      if (tokenId) {
+        data.read("users", phone, (err, user) => {
+          if (!err && user) {
+            data.delete("users", phone, (err) => {
+              if (!err) {
+                callBack(200, {
+                  message: "successfully deleted user",
+                });
+              } else {
+                callBack(500, {
+                  error: "server site error...",
+                });
+              }
             });
           } else {
             callBack(500, {
@@ -226,8 +264,8 @@ handler._users.delete = (requestProperties, callBack) => {
           }
         });
       } else {
-        callBack(500, {
-          error: "server site error...",
+        callBack(403, {
+          error: "Authentication failure...",
         });
       }
     });
@@ -236,7 +274,6 @@ handler._users.delete = (requestProperties, callBack) => {
       error: "invalid request. try again",
     });
   }
-
 };
 
 module.exports = handler;

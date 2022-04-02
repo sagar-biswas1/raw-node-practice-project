@@ -131,7 +131,7 @@ handler._token.put = (requestProperties, callBack) => {
 
         // store the updated tokenData
 
-        data.update("tokens", id,tokenObject, (err) => {
+        data.update("tokens", id, tokenObject, (err) => {
           if (!err) {
             callBack(200, {
               message: "Sussessfully updated data...",
@@ -155,45 +155,57 @@ handler._token.put = (requestProperties, callBack) => {
   }
 };
 handler._token.delete = (requestProperties, callBack) => {
-// check the token is valid
- const id =
-   typeof requestProperties.body.tokenID === "string" &&
-   requestProperties.body.tokenID.trim().length === 20
-     ? requestProperties.body.tokenID
-     : false;
+  // check the token is valid
+  const id =
+    typeof requestProperties.body.tokenID === "string" &&
+    requestProperties.body.tokenID.trim().length === 20
+      ? requestProperties.body.tokenID
+      : false;
 
- if (id) {
-   data.read("tokens", id, (err, tokenData) => {
-     if (!err && tokenData) {
-       data.delete("tokens", id, (err) => {
-         if (!err) {
-           callBack(200, {
-             message: "successfully deleted user",
-           });
-         } else {
-           callBack(500, {
-             error: "server site error...",
-           });
-         }
-       });
-     } else {
-       callBack(500, {
-         error: "server site error...",
-       });
-     }
-   });
- } else {
-   callBack(400, {
-     error: "invalid request. try again",
-   });
- }
+  if (id) {
+    data.read("tokens", id, (err, tokenData) => {
+      if (!err && tokenData) {
+        data.delete("tokens", id, (err) => {
+          if (!err) {
+            callBack(200, {
+              message: "successfully deleted user",
+            });
+          } else {
+            callBack(500, {
+              error: "server site error...",
+            });
+          }
+        });
+      } else {
+        callBack(500, {
+          error: "server site error...",
+        });
+      }
+    });
+  } else {
+    callBack(400, {
+      error: "invalid request. try again",
+    });
+  }
 
-// 
+  //
+};
 
-
- 
-
-
+handler._token.verify = (id, phone, callBack) => {
+  data.read("tokens", id, (err, tokenData) => {
+    if (!err) {
+      if (
+        parseJSON(tokenData).phone === phone &&
+        parseJSON(tokenData).expires > Date.now()
+      ) {
+        callBack(true);
+      } else {
+        callBack(false);
+      }
+    } else {
+      callBack(false);
+    }
+  });
 };
 
 module.exports = handler;
