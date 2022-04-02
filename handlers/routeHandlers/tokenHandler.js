@@ -51,6 +51,8 @@ handler._token.post = (requestProperties, callBack) => {
     data.read("users", phone, (error, userData) => {
       let hashedPassword = hash(password);
 
+console.log({error})
+
       if (hashedPassword === parseJSON(userData).password) {
         let tokenID = createRandomString(20);
         let expires = Date.now() + 60 * 60 * 1000;
@@ -80,6 +82,8 @@ handler._token.post = (requestProperties, callBack) => {
 };
 
 handler._token.get = (requestProperties, callBack) => {
+  //sample url: http://localhost:3000/token?tokenID=uddx84w30gqi3lk6dyfp
+
   //check the id is valid
   const id =
     typeof requestProperties.queryStringObject.tokenID === "string" &&
