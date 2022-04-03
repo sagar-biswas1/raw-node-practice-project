@@ -211,7 +211,112 @@ handler._check.get = (requestProperties, callBack) => {
   }
 };
 
-handler._check.put = (requestProperties, callBack) => {};
+handler._check.put = (requestProperties, callBack) => {
+  const id =
+    typeof requestProperties.body.id === "string" &&
+    requestProperties.body.id.trim().length === 20
+      ? requestProperties.body.id
+      : false;
+
+  let protocol =
+    typeof requestProperties.body.protocol === "string" &&
+    ["http", "https"].indexOf(requestProperties.body.protocol) > -1
+      ? requestProperties.body.protocol
+      : false;
+
+  let url =
+    typeof requestProperties.body.url === "string" &&
+    requestProperties.body.url.trim().length > 0
+      ? requestProperties.body.url
+      : false;
+
+  let method =
+    typeof requestProperties.body.method === "string" &&
+    ["get", "post", "put", "delete"].indexOf(
+      requestProperties.body.method.trim().toLowerCase()
+    ) > -1
+      ? requestProperties.body.method.trim()
+      : false;
+
+  let successCodes =
+    typeof requestProperties.body.successCodes === "object" &&
+    requestProperties.body.successCodes instanceof Array
+      ? requestProperties.body.successCodes
+      : false;
+
+  let timeOutSeconds =
+    typeof requestProperties.body.timeOutSeconds === "number" &&
+    requestProperties.body.timeOutSeconds % 1 === 0 &&
+    requestProperties.body.timeOutSeconds >= 1 &&
+    requestProperties.body.timeOutSeconds <= 5
+      ? requestProperties.body.timeOutSeconds
+      : false;
+
+  if (id) {
+    if (protocol || utl || method || successCodes || timeOutSeconds) {
+      data.read("checks", id, (err, checkData) => {
+        if (!err && checkData) {
+          let checkObject = { ...parseJSON(checkData) };
+          let token =
+            typeof requestProperties.headerObject.token === "string"
+              ? requestProperties.headerObject.token
+              : false;
+          tokenHandler._token.verify(
+            token,
+            checkObject.userPhone,
+            (isVerified) => {
+              if (isVerified) {
+                if (protocol) {
+                  checkObject.protocol = protocol;
+                }
+                if (url) {
+                  checkObject.url = url;
+                }
+                if (method) {
+                  checkObject.method = method;
+                }
+                if (successCodes) {
+                  checkObject.successCodes = successCodes;
+                }
+                if (timeOutSeconds) {
+                  checkObject.timeOutSeconds = timeOutSeconds;
+                }
+
+                data.update("checks", id, checkObject, (err) => {
+                  if (!err) {
+                    callBack(200, {
+                      message: "updated successfully",
+                    });
+                  } else {
+                    callBack(500, {
+                      message: "Server side error",
+                    });
+                  }
+                });
+              } else {
+                callBack(403, {
+                  message: "Auth error....",
+                });
+              }
+            }
+          );
+        } else {
+          callBack(500, {
+            message: "Error in server side...",
+          });
+        }
+      });
+    } else {
+      callBack(400, {
+        message: "You should provide at least one field to update...",
+      });
+    }
+  } else {
+    callBack(400, {
+      message: "You have a problem in your request...",
+    });
+  }
+};
 
 handler._check.delete = (requestProperties, callBack) => {};
 
