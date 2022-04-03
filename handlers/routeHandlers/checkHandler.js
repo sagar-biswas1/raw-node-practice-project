@@ -318,6 +318,105 @@ handler._check.put = (requestProperties, callBack) => {
   }
 };
 
-handler._check.delete = (requestProperties, callBack) => {};
+handler._check.delete = (requestProperties, callBack) => {
+  const id =
+    typeof requestProperties.queryStringObject.id === "string" &&
+    requestProperties.queryStringObject.id.trim().length === 20
+      ? requestProperties.queryStringObject.id
+      : false;
+
+  if (id) {
+    //lookup the check
+    // console.log(id);
+    data.read("checks", id, (err, checkData) => {
+      let parsedCheckData = { ...parseJSON(checkData) };
+
+      if (!err && checkData) {
+        let token =
+          typeof requestProperties.headerObject.token === "string"
+            ? requestProperties.headerObject.token
+            : false;
+
+        tokenHandler._token.verify(
+          token,
+          parsedCheckData.userPhone,
+          (tokenId) => {
+            if (tokenId) {
+              //delete the check data
+              data.delete("checks", id, (err) => {
+                if (!err) {
+                  data.read(
+                    "users",
+                    parsedCheckData.userPhone,
+                    (err, userData) => {
+                      let userObject = parseJSON(userData);
+
+                      if (!err && userData) {
+                        let userChecks =
+                          typeof userObject.checks === "object" &&
+                          userObject.checks instanceof Array
+                            ? userObject.checks
+                            : [];
+
+                        //remove the deleted check id from the user's list of checks
+
+                        let checkPosition = userChecks.indexOf(id);
+
+                        if (checkPosition > -1) {
+                          userChecks.splice(checkPosition, 1);
+                          userObject.checks = userChecks;
+                          data.update(
+                            "users",
+                            userObject.phone,
+                            userObject,
+                            (err) => {
+                              if (!err) {
+                                callBack(200, {
+                                  message: "deleted successfully",
+                                });
+                              } else {
+                                callBack(500, {
+                                  message: "The id you are trying to remove is not present in the checks array...",
+                                });
+                              }
+                            }
+                          );
+                        } else {
+                          callBack(500, {
+                            message: "server side error",
+                          });
+                        }
+                      } else {
+                        callBack(500, {
+                          message: "server side error",
+                        });
+                      }
+                    }
+                  );
+                } else {
+                  callBack(500, {
+                    message: "server side error...",
+                  });
+                }
+              });
+            } else {
+              callBack(400, {
+                message: "Auth error",
+              });
+            }
+          }
+        );
+      } else {
+        callBack(400, {
+          message: "You have a problem in your request......",
+        });
+      }
+    });
+  } else {
+    callBack(400, {
+      message: "You have a problem in your request...",
+    });
+  }
+};
 
 module.exports = handler;
